@@ -72,7 +72,7 @@ class LoginController extends Controller
               "user_id" => $authUser->id
           )
         );
-        return redirect("http://localhost:3000/easy-response-web/login/$sessionId");
+        return redirect("http://localhost:3000/login/$sessionId");
     }
 
     public function findOrCreateUser($user, $provider) {

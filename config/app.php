@@ -160,6 +160,7 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         Laravel\Socialite\SocialiteServiceProvider::class,
+        Barryvdh\Cors\ServiceProvider::class,
     ],
 
     /*
