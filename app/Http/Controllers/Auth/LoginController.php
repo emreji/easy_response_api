@@ -90,14 +90,9 @@ class LoginController extends Controller
     public function logout(Request $request) {
         $sessionId = $request->header('SessionId');
 
-        $deleted = DB::table('sessions')->where('session_id', '=', $sessionId)->delete();
-
-        if($deleted) {
-            Auth::logout();
-            $response = new SuccessReponse("Logout Success");
-        } else {
-            $response = new SuccessReponse("Logout Failed!");
-        }
+        DB::table('sessions')->where('session_id', '=', $sessionId)->delete();
+        Auth::logout();
+        $response = new SuccessReponse("Logout Success");
 
         return response()->json($response);
     }
