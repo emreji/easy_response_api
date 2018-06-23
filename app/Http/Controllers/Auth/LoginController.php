@@ -46,7 +46,6 @@ class LoginController extends Controller
     public function redirectToProvider($provider)
     {
         return Socialite::driver($provider)->redirect();
-//        return Socialite::driver($provider)->redirect();
     }
 
     public function getUserBySessionId(Request $request) {
@@ -91,10 +90,14 @@ class LoginController extends Controller
     public function logout(Request $request) {
         $sessionId = $request->header('SessionId');
 
-        DB::table('sessions')->where('session_id', '=', $sessionId)->delete();
+        $deleted = DB::table('sessions')->where('session_id', '=', $sessionId)->delete();
 
-        Auth::logout();
-        $response = new SuccessReponse("Logout Success");
+        if($deleted) {
+            Auth::logout();
+            $response = new SuccessReponse("Logout Success");
+        } else {
+            $response = new SuccessReponse("Logout Failed!");
+        }
 
         return response()->json($response);
     }
