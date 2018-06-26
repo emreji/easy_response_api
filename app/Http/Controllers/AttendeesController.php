@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Attendee;
+use App\Mail\Email;
+use App\SuccessReponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class AttendeesController extends Controller
 {
@@ -37,7 +40,11 @@ class AttendeesController extends Controller
      */
     public function store(Request $request)
     {
-        return Attendee::create($request->all());
+        if($request->response == "attending" || $request->response == null) {
+            $this->sendConfirmationEmail($request);
+        }
+
+        Attendee::create($request->all());
     }
 
     public function getAttendeesForEventId($eventId, Request $request) {
@@ -50,7 +57,6 @@ class AttendeesController extends Controller
             ->where('attendees.event_id', '=', $eventId)
             ->select('attendees.*')
             ->get();
-
 
         return $attendees;
     }
@@ -99,5 +105,49 @@ class AttendeesController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    public function sendConfirmationEmail(Request $attendee) {
+
+        $event = DB::table('events')
+            ->where('id', $attendee->event_id)
+            ->get();
+        $data = [
+            'event' => $event[0]
+        ];
+
+        Mail::to($attendee->email_id)->send(new Email($data));
+    }
+
+    public function sendReminderEmail(Request $request, $eventId) {
+
+        $sessionId = $request->header('SessionId');
+        $attendeesEmail = DB::table('sessions')
+            ->join('events', 'sessions.user_id', '=', 'events.user_id')
+            ->join('attendees', 'attendees.event_id', '=', 'events.id')
+            ->where('sessions.session_id', '=', $sessionId)
+            ->where('attendees.event_id', '=', $eventId)
+            ->get();
+
+        if(count($attendeesEmail) > 0) {
+            $attendeeEmailArray = array();
+            foreach ($attendeesEmail as $a) {
+                array_push($attendeeEmailArray, $a->email_id);
+            }
+
+            $event = DB::table('events')
+                ->where('id', $eventId)
+                ->get();
+            $data = [
+                'event' => $event[0],
+                'attendees' => $attendeeEmailArray
+            ];
+
+            Mail::bcc($attendeeEmailArray)->send(new Email($data));
+            $response = new SuccessReponse("Email sent");
+        } else {
+            $response = new SuccessReponse("Permission Denied!");
+        }
+        return response()->json($response);
     }
 }

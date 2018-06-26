@@ -51,7 +51,9 @@ class EventsController extends Controller
     public function store(Request $request)
     {
         $sessionId = $request->header('SessionId');
-        $results = DB::table('sessions')->where('session_id', $sessionId)->pluck('user_id');
+        $results = DB::table('sessions')
+            ->where('session_id', $sessionId)
+            ->pluck('user_id');
 
         if(count($results) > 0) {
             $userId = $results->first();

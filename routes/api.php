@@ -37,3 +37,5 @@ Route::get('session/{id}', 'SessionController@userDoesExistForSessionId');
 
 Route::get('user', 'Auth\LoginController@getUserBySessionId');
 Route::get('logout', 'Auth\LoginController@logout');
+
+Route::get('remind/event/{eventId}', 'AttendeesController@sendReminderEmail');
